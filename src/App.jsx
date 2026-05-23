@@ -1,122 +1,78 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState, useEffect } from 'react'
+import { getMoonIllumination, getMoonTimes } from 'suncalc'
+import Moon from './Moon'
 
 function App() {
-  const [count, setCount] = useState(0)
+  // getting date
+  const now = new Date()
+  const moon = getMoonIllumination(now)
 
+  // getting shadow angle
+  const angle = moon.phase * Math.PI * 2
+  const lightX = Math.sin(angle) * 5
+  const lightZ = Math.cos(angle) * 5
+
+  // getting user location and time
+  const [location, setLocation] = useState(null)
+
+  // getting next rise/set times
+  const [nextRise, setNextRise] = useState(null)
+  const [nextSet, setNextSet] = useState(null)
+  const [isMoonUp, setIsMoonUp] = useState(null)
+
+  useEffect(() => {
+
+    fetch('https://ipapi.co/json/')
+      .then(res => res.json())
+      .then(data => {
+        const lat = data.latitude
+        const lng = data.longitude
+
+        setLocation({ lat, lng })
+
+          // getting next rise/set times
+          const times = getMoonTimes(now, lat, lng)
+          const tomorrow = new Date()
+          tomorrow.setDate(tomorrow.getDate() + 1)
+          const tomorrowTimes = getMoonTimes(tomorrow, lat, lng)
+
+          // show NEXT rise/set time
+          setNextRise(times.rise < now ? tomorrowTimes.rise : times.rise)
+          setNextSet(times.set < now ? tomorrowTimes.set : times.set)
+
+          // checking last moon rise/set
+          setIsMoonUp(times.rise < now && (times.set < times.rise || times.set > now))
+      })
+  }, [])
+  
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+    <div>
+      <h1 className="visually-hidden">The Lunar Oracle</h1>
+      <img className="page-header" src="assets/page-header.png" alt="The Lunar Oracle"></img>
+      <p className="moon-phase">Phase: {getMoonPhaseName(moon.phase)}</p>
+      <p className="moon-times">
+        {isMoonUp === null 
+          ? 'Consulting the stars...'
+          : isMoonUp 
+            ? `The moon graces us with her presence. She rose at ${nextRise?.toLocaleTimeString()} and will rest at ${nextSet?.toLocaleTimeString()}.`
+            : `She is slumbering as of ${nextSet?.toLocaleTimeString()}. Please do not disturb her. She will wake again at ${nextRise?.toLocaleTimeString()}.`
+        }
+      </p>
+      <Moon lightX={lightX} lightZ={lightZ} />
+    </div>
   )
+}
+
+function getMoonPhaseName(phase) {
+  if (phase < 0.0625) return 'New Moon'
+  if (phase < 0.1875) return 'Waxing Crescent'
+  if (phase < 0.3125) return 'First Quarter'
+  if (phase < 0.4375) return 'Waxing Gibbous'
+  if (phase < 0.5625) return 'Full Moon'
+  if (phase < 0.6875) return 'Waning Gibbous'
+  if (phase < 0.8125) return 'Last Quarter'
+  if (phase < 0.9375) return 'Waning Crescent'
+  return 'New Moon'
 }
 
 export default App

@@ -1,0 +1,70 @@
+:root {
+  /* Backgrounds */
+  --color-space: #060810;
+  --color-midnight: #0d1628;
+
+  /* Text */
+  --color-parchment: #f0ead6;
+  --color-gold: #d4a847;
+
+  /* Accents */
+  --color-lavender: #9b7ec8;
+  --color-moonlight: #c8d4e8;
+
+  /* Glows */
+  --color-sapphire: #1c3a6e;
+  --color-violet: #4a1f6e;
+
+  /* font */
+  --serif-font: 'Cormorant Garamond', serif;
+  --sans-serif-font: 'Raleway', sans-serif;
+}
+
+body {
+  background: var(--color-space);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.page-header {
+  margin: 0 auto 20px;
+  padding: 0 10px;
+  border-left: 1px solid var(--color-gold);
+  border-right: 1px solid var(--color-gold);
+  border-bottom: 1px solid var(--color-gold);
+  background: var(--color-midnight);
+}
+
+.moon-phase {
+  font-family: var(--serif-font);
+  font-size: 55px;
+  color: var(--color-moonlight);
+  width: fit-content;
+  margin: auto;
+  letter-spacing: 3px;
+}
+
+.moon-times {
+  text-align: center;
+  font-family: 'Raleway';
+  font-size: 20px;
+  color: var(--color-moonlight);
+}
+
+.moon-canvas {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+}
